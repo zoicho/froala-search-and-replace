@@ -1,17 +1,35 @@
 $( document ).ready(function() {
-    console.log('dom loaded');
+
+    let defaultHtml = `<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas aliquet accumsan leo. 
+Nunc tincidunt ante vitae massa. Nulla est. Mauris dolor felis, sagittis at, 
+luctus sed, aliquam non, tellus. Aliquam erat volutpat. Aliquam erat volutpat. 
+Nulla quis diam. Integer pellentesque quam vel velit. Nam libero tempore, 
+cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod 
+maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.</p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas aliquet accumsan leo. 
+Nunc tincidunt ante vitae massa. Nulla est. Mauris dolor felis, sagittis at, 
+luctus sed, aliquam non, tellus. Aliquam erat volutpat. Aliquam erat volutpat. 
+Nulla quis diam. Integer pellentesque quam vel velit. Nam libero tempore, 
+cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod 
+maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.</p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas aliquet accumsan leo. 
+Nunc tincidunt ante vitae massa. Nulla est. Mauris dolor felis, sagittis at, 
+luctus sed, aliquam non, tellus. Aliquam erat volutpat. Aliquam erat volutpat. 
+Nulla quis diam. Integer pellentesque quam vel velit. Nam libero tempore, 
+cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod 
+maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.</p>`;
 
     // Define popup template.
     Object.assign(FroalaEditor.POPUP_TEMPLATES, {
-        'customPlugin.popup': '[_CUSTOM_LAYER_][_BUTTONS_]'
+        'searchAndReplacePlugin.popup': '[_CUSTOM_LAYER_][_BUTTONS_]'
     });
 
     // Define popup buttons.
     Object.assign(FroalaEditor.DEFAULTS, {
-        popupButtons: ['popupClose', '|', 'popupButton1', 'popupButton2'],
+        popupButtons: ['popupClose', '|', /*'onlySearchButton', */'replaceFirstButton', 'replaceAllButton'],
     });
 
-    FroalaEditor.PLUGINS.customPlugin = function (editor) {
+    FroalaEditor.PLUGINS.searchAndReplacePlugin = function (editor) {
         // Create custom popup.
         function initPopup () {
             // Load popup template.
@@ -45,7 +63,7 @@ $( document ).ready(function() {
 
 
             // Create popup.
-            var $popup = editor.popups.create('customPlugin.popup', template);
+            var $popup = editor.popups.create('searchAndReplacePlugin.popup', template);
 
             return $popup;
         }
@@ -53,7 +71,7 @@ $( document ).ready(function() {
         // Show the popup
         function showPopup () {
             // Get the popup object defined above.
-            var $popup = editor.popups.get('customPlugin.popup');
+            var $popup = editor.popups.get('searchAndReplacePlugin.popup');
 
             // If popup doesn't exist then create it.
             // To improve performance it is best to create the popup when it is first needed
@@ -61,17 +79,17 @@ $( document ).ready(function() {
             if (!$popup) $popup = initPopup();
 
             // Set the editor toolbar as the popup's container.
-            editor.popups.setContainer('customPlugin.popup', editor.$tb);
+            editor.popups.setContainer('searchAndReplacePlugin.popup', editor.$tb);
 
             // If the editor is not displayed when a toolbar button is pressed, then set BODY as the popup's container.
-            // editor.popups.setContainer('customPlugin.popup', $('body'));
+            // editor.popups.setContainer('searchAndReplacePlugin.popup', $('body'));
 
             // Trigger refresh for the popup.
-            // editor.popups.refresh('customPlugin.popup');
+            // editor.popups.refresh('searchAndReplacePlugin.popup');
 
             // This custom popup is opened by pressing a button from the editor's toolbar.
             // Get the button's object in order to place the popup relative to it.
-            var $btn = editor.$tb.find('.fr-command[data-cmd="myButton"]');
+            var $btn = editor.$tb.find('.fr-command[data-cmd="findAndReplaceButton"]');
 
             // Compute the popup's position.
             var left = $btn.offset().left + $btn.outerWidth() / 2;
@@ -79,12 +97,12 @@ $( document ).ready(function() {
 
             // Show the custom popup.
             // The button's outerHeight is required in case the popup needs to be displayed above it.
-            editor.popups.show('customPlugin.popup', left, top, $btn.outerHeight());
+            editor.popups.show('searchAndReplacePlugin.popup', left, top, $btn.outerHeight());
         }
 
         // Hide the custom popup.
         function hidePopup () {
-            editor.popups.hide('customPlugin.popup');
+            editor.popups.hide('searchAndReplacePlugin.popup');
         }
 
         // Methods visible outside the plugin.
@@ -94,25 +112,25 @@ $( document ).ready(function() {
         }
     }
 
-    FroalaEditor.DefineIcon('buttonIcon', { NAME: 'star', SVG_KEY: 'search'})
-    FroalaEditor.RegisterCommand('myButton', {
-        title: 'Show Popup',
-        icon: 'buttonIcon',
+    FroalaEditor.DefineIcon('findAndReplaceButton', { NAME: 'star', SVG_KEY: 'search'})
+    FroalaEditor.RegisterCommand('findAndReplaceButton', {
+        title: 'Find and replace',
+        icon: 'findAndReplaceButton',
         undo: false,
         focus: false,
         popup: true,
         // Buttons which are included in the editor toolbar should have the plugin property set.
-        plugin: 'customPlugin',
+        plugin: 'searchAndReplacePlugin',
         callback: function () {
-            if (!this.popups.isVisible('customPlugin.popup')) {
-                this.customPlugin.showPopup();
+            if (!this.popups.isVisible('searchAndReplacePlugin.popup')) {
+                this.searchAndReplacePlugin.showPopup();
             }
             else {
                 if (this.$el.find('.fr-marker')) {
                     this.events.disableBlur();
                     this.selection.restore();
                 }
-                this.popups.hide('customPlugin.popup');
+                this.popups.hide('searchAndReplacePlugin.popup');
             }
         }
     });
@@ -123,14 +141,38 @@ $( document ).ready(function() {
         undo: false,
         focus: false,
         callback: function () {
-            this.customPlugin.hidePopup();
+            this.searchAndReplacePlugin.hidePopup();
         }
     });
 
-    FroalaEditor.DefineIcon('popupButton1', { NAME: 'replace', SVG_KEY: 'search' });
-    FroalaEditor.RegisterCommand('popupButton1', {
+    /*FroalaEditor.DefineIcon('onlySearchButton', { NAME: 'replace', SVG_KEY: 'search' });
+    FroalaEditor.RegisterCommand('onlySearchButton', {
+        title: 'Only search',
+        undo: true,
+        focus: false,
+        callback: function () {
+            let search = document.getElementById('fr-searchreplace-search-' + this.id).value;
+            if(!search || !search.length) {
+                return;
+            }
+
+            let htmlEl = this.$el[0];
+            let textContent = htmlEl.textContent;
+            let textContentLength = htmlEl.textContent.length;
+
+            let range = document.createRange();
+            let selection = window.getSelection();
+
+            range.setStart(htmlEl, 0);
+            range.setEnd(htmlEl, 1);
+
+        }
+    });*/
+
+    FroalaEditor.DefineIcon('replaceFirstButton', { NAME: 'replace', SVG_KEY: 'search' });
+    FroalaEditor.RegisterCommand('replaceFirstButton', {
         title: 'Replace first',
-        undo: false,
+        undo: true,
         focus: false,
         callback: function () {
             let search = document.getElementById('fr-searchreplace-search-' + this.id).value;
@@ -144,10 +186,10 @@ $( document ).ready(function() {
         }
     });
 
-    FroalaEditor.DefineIcon('popupButton2',{ NAME: 'replace-all', SVG_KEY: 'search' });
-    FroalaEditor.RegisterCommand('popupButton2', {
+    FroalaEditor.DefineIcon('replaceAllButton',{ NAME: 'replace-all', SVG_KEY: 'search' });
+    FroalaEditor.RegisterCommand('replaceAllButton', {
         title: 'Replace all',
-        undo: false,
+        undo: true,
         focus: false,
         callback: function () {
             let search = document.getElementById('fr-searchreplace-search-' + this.id).value;
@@ -158,7 +200,7 @@ $( document ).ready(function() {
             let html = this.html.get();
             html = html.replace(new RegExp(search, 'g'), replace);
             this.html.set(html);
-            this.customPlugin.hidePopup();
+            this.searchAndReplacePlugin.hidePopup();
         }
     });
 
@@ -176,12 +218,13 @@ $( document ).ready(function() {
                 'buttons': ['insertLink', 'insertImage', 'insertVideo', 'insertTable', 'emoticons', 'fontAwesome', 'specialCharacters', 'embedly', 'insertFile', 'insertHR']
             },
             'moreMisc': {
-                'buttons': ['myButton', 'undo', 'redo', 'fullscreen', 'print', 'getPDF', 'spellChecker', 'selectAll', 'html', 'help'],
+                'buttons': ['findAndReplaceButton', 'undo', 'redo', 'fullscreen', 'print', 'getPDF', 'spellChecker', 'selectAll', 'html', 'help'],
                 'align': 'right',
-                'buttonsVisible': 2
+                'buttonsVisible': 1
             }
         }
+    }, function() {
+        this.html.set(defaultHtml);
     });
-
 
 });
